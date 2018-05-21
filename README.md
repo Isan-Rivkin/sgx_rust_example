@@ -10,7 +10,7 @@ Pure Rust Enclave && Untrusted in Rust.
 * clone this repo into /some/path/hello_rust_example
 * run docker 
 ``` 
- docker run -v baidu/sdk/repo/path/rust-sgx-sdk/:/root/sgx -v /some/path/hello_rust_example:/root/sealing_example -v -ti --device /dev/isgx baiduxlab/sgx-rust
+ docker run -v baidu/sdk/repo/path/rust-sgx-sdk/:/root/sgx -v /some/path/hello_rust_example:/root/hello_rust_example -v -ti --device /dev/isgx baiduxlab/sgx-rust
 ```
 * Inside docker: 
 ```
