@@ -7,3 +7,4 @@ build = "build.rs"
 [dependencies]
 sgx_types = { path = "/root/sgx/sgx_types" }
 sgx_urts = { path = "/root/sgx/sgx_urts" }
+base64 = "0.9.1"
