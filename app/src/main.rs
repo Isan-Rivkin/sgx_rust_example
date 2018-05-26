@@ -40,6 +40,9 @@ use std::env;
 extern crate base64;
 use base64::{encode, decode};
 use marker::ContiguousMemory;
+extern crate libc;
+use libc::malloc;
+use std::slice;
 
 static ENCLAVE_FILE: &'static str = "enclave.signed.so";
 static ENCLAVE_TOKEN: &'static str = "enclave.token";
@@ -232,6 +235,10 @@ fn main() {
         let mut theQuote = sgx_quote_t::default();
         let nonce =  sgx_quote_nonce_t::default();;
         let mut qeReport = sgx_report_t::default();
+        let mut allocated = unsafe {
+            malloc(quoteSize as usize)
+        };
+        println!(" allocated !! ===== >>>> {:? }", allocated);
         stat = unsafe {
             sgx_get_quote(&report, 
             quoteType , 
@@ -240,34 +247,18 @@ fn main() {
             std::ptr::null(),
             0, 
             &mut qeReport,
-            &mut theQuote, 
+            allocated as *mut sgx_quote_t, // wtf 
             quoteSize )
         };
-        println!("=========== the quote ==================");
-        println!("get_quote() status = {:?}",stat );
-        println!("version {}",theQuote.version );
-        println!("get_quote() signature_len = {:?}",theQuote.signature_len );
-        println!("get_quote() signature array len  = {:?}",theQuote.signature.len() );
-        println!("get_quote() signature   = {:?}",theQuote.signature );
-        println!("=========== the quote ==================");
+        println!(" allocated !! ===== >>>> {:? }", allocated);  
+        printQuote(&theQuote,&stat);
+        // let mut slicedAllocated =  unsafe {
+        //     slice::from_raw_parts(allocated, quoteSize as usize)
+        // };
+        let bytes: &[u8] = unsafe { any_as_u8_slice(&( allocated as *mut sgx_quote_t)) };
 
-        let bytes: &[u8] = unsafe { any_as_u8_slice(&theQuote) };
-        //println!("{:?}", bytes);
-        
-        let encoded_quote = encode(bytes);
+        let encoded_quote = encode(&bytes);
         println!("Encoded Quote = {}",encoded_quote );
-    //         pub struct sgx_quote_t {
-    //     pub version: ::uint16_t,                    /* 0   */
-    //     pub sign_type: ::uint16_t,                  /* 2   */
-    //     pub epid_group_id: sgx_epid_group_id_t,     /* 4   */
-    //     pub qe_svn: sgx_isv_svn_t,                  /* 8   */
-    //     pub pce_svn: sgx_isv_svn_t,                 /* 10  */
-    //     pub xeid: ::uint32_t,                       /* 12  */
-    //     pub basename: sgx_basename_t,               /* 16  */
-    //     pub report_body: sgx_report_body_t,         /* 48  */
-    //     pub signature_len: ::uint32_t,              /* 432 */
-    //     pub signature: [::uint8_t; 0],              /* 436 */
-    // }
 
     // end of my tests
 
@@ -282,4 +273,27 @@ unsafe fn any_as_u8_slice<T: Sized>(p: &T) -> &[u8] {
         (p as *const T) as *const u8,
         ::std::mem::size_of::<T>(),
     )
+}
+
+    //         pub struct sgx_quote_t {
+    //     pub version: ::uint16_t,                    /* 0   */
+    //     pub sign_type: ::uint16_t,                  /* 2   */
+    //     pub epid_group_id: sgx_epid_group_id_t,     /* 4   */
+    //     pub qe_svn: sgx_isv_svn_t,                  /* 8   */
+    //     pub pce_svn: sgx_isv_svn_t,                 /* 10  */
+    //     pub xeid: ::uint32_t,                       /* 12  */
+    //     pub basename: sgx_basename_t,               /* 16  */
+    //     pub report_body: sgx_report_body_t,         /* 48  */
+    //     pub signature_len: ::uint32_t,              /* 432 */
+    //     pub signature: [::uint8_t; 0],              /* 436 */
+    // }
+
+fn printQuote(theQuote : &sgx_quote_t , stat : &sgx_status_t){
+        println!("=========== the quote ==================");
+        println!("get_quote() status = {:?}",stat );
+        println!("version {}",theQuote.version );
+        println!("get_quote() signature_len = {:?}",theQuote.signature_len );
+        println!("get_quote() signature array len  = {:?}",theQuote.signature.len() );
+        println!("get_quote() signature   = {:?}",theQuote.signature );
+        println!("=========== the quote ==================");
 }

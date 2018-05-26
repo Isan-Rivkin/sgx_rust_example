@@ -8,3 +8,4 @@ build = "build.rs"
 sgx_types = { path = "/root/sgx/sgx_types" }
 sgx_urts = { path = "/root/sgx/sgx_urts" }
 base64 = "0.9.1"
+libc = "0.2.41"
