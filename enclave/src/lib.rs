@@ -121,10 +121,19 @@ pub extern "C" fn say_something_twice(some_string: *const u8, some_len: usize) -
 //#[link(name = "sgx_tservice")]
 #[no_mangle]
 pub extern "C" fn ecall_create_report(targetInfo: &sgx_target_info_t , real_report: &mut sgx_report_t) -> sgx_status_t {
+    let reportDataSize : usize = 64;
+
     println!("Inside enclave create_report() ======================>");
     println!("targetInfo mr_enclave = {:?}",targetInfo.mr_enclave.m );
     //let target_info = sgx_target_info_t::default();
-    let report_data = sgx_report_data_t::default();
+    let mut report_data = sgx_report_data_t::default();
+    for i in 0..reportDataSize{
+        report_data.d[i] = 1;
+    }
+    report_data.d[0] = 'i' as u8;
+    report_data.d[1] = 's' as u8;
+    report_data.d[2] = 'a' as u8;
+    report_data.d[3] = 'n' as u8;
     let mut finalReport : sgx_report_t;
     let mut report = match rsgx_create_report(&targetInfo, &report_data) {
         Ok(r) =>{

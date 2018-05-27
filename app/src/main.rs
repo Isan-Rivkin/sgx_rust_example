@@ -239,6 +239,7 @@ fn main() {
             malloc(quoteSize as usize)
         };
         println!(" allocated !! ===== >>>> {:? }", allocated);
+        let mut shit = vec![0u8; quoteSize as usize].into_boxed_slice();
         stat = unsafe {
             sgx_get_quote(&report, 
             quoteType , 
@@ -247,7 +248,7 @@ fn main() {
             std::ptr::null(),
             0, 
             &mut qeReport,
-            allocated as *mut sgx_quote_t, // wtf 
+            shit.as_mut_ptr() as *mut sgx_quote_t,//allocated as *mut sgx_quote_t, // wtf 
             quoteSize )
         };
         println!(" allocated !! ===== >>>> {:? }", allocated);  
@@ -255,9 +256,9 @@ fn main() {
         // let mut slicedAllocated =  unsafe {
         //     slice::from_raw_parts(allocated, quoteSize as usize)
         // };
-        let bytes: &[u8] = unsafe { any_as_u8_slice(&( allocated as *mut sgx_quote_t)) };
+        let bytes: &[u8] = unsafe { any_as_u8_slice(&(theQuote)) };
 
-        let encoded_quote = encode(&bytes);
+        let encoded_quote = encode(&shit);
         println!("Encoded Quote = {}",encoded_quote );
 
     // end of my tests
